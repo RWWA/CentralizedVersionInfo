@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  <copyright file="WixBuild.Version.targets" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="PrepareBuildVersionInfo" >
+  <!--
+  ================================================================================================
+  FileRegexReplace
+
+    Replaces text in file using regex. Does not write to file if content is not changed.
+  ================================================================================================
+  -->
+  <UsingTask TaskName="FileRegexReplace" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <Path ParameterType="System.String" Required="true" />
+      <Pattern ParameterType="System.String" Required="true" />
+      <Replacement ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Text.RegularExpressions"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+      string input = File.ReadAllText(Path);
+      Regex rgx = new Regex(Pattern, RegexOptions.Multiline | RegexOptions.IgnoreCase);
+      string result = rgx.Replace(input, Replacement);
+
+      if (input != result)
+        File.WriteAllText(Path, result);
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <!--
+  ================================================================================================
+  OverrideFileIfContentIsChanged
+
+    Compares content of file with desired content and if different it performs an update.
+    Locks file for multhreaded access.
+  ================================================================================================
+  -->
+  <UsingTask TaskName="OverrideFileIfContentIsChanged" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <Path ParameterType="System.String" Required="true" />
+      <Content ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+      string input = "";
+
+      try{
+        input = File.ReadAllText(Path);
+      }
+      catch{
+        Log.LogMessage("Failed to read file " + Path);
+      }
+
+      try{
+        if (input != Content)
+          File.WriteAllText(Path, Content);
+      }
+      catch{
+        Log.LogMessage("Failed to override file " + Path);
+      }
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <PropertyGroup>
+    <FullBuildVersionString>0.0.0.0</FullBuildVersionString>
+  </PropertyGroup>
+
+  <!-- Central control over versioning -->
+  <Target Name="PrepareBuildVersionInfo">
+    <PropertyGroup>
+      <VersionInfoFileName>$([System.IO.Path]::Combine($(SolutionDir),$(VersionFile)))</VersionInfoFileName>
+      <VersionInfo Condition="Exists($(VersionInfoFileName))">$([Version][System.IO.File]::ReadAllText($(VersionInfoFileName)).Trim())</VersionInfo>
+      <MajorVersionNumber>$(VersionInfo.Major)</MajorVersionNumber>
+      <MinorVersionNumber>$(VersionInfo.Minor)</MinorVersionNumber>
+      <BuildVersionNumber>$(VersionInfo.Build)</BuildVersionNumber>
+      <RevisionVersionNumber>$(VersionInfo.Revision)</RevisionVersionNumber>
+
+      <!-- Override build number if OverrideBuildVersionNumberFileName present -->
+      <BuildVersionNumber Condition=" '$(BuildVersionNumberOverride)' != '' ">$(BuildVersionNumberOverride)</BuildVersionNumber>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <FullBuildVersionString>$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber).$(RevisionVersionNumber)</FullBuildVersionString>
+      <FullBuildVersionString Condition=" '$(AsmVersion)' != '' ">$(AsmVersion)</FullBuildVersionString>
+    </PropertyGroup>
+  </Target>
+
+  <PropertyGroup>
+    <VersionPath>obj\</VersionPath>
+
+    <SetupVersionFile>$(VersionPath)AssemblyVersion.wxi</SetupVersionFile>
+    <AssemblyVersionFile>$(SolutionDir)AssemblyVersion.txt</AssemblyVersionFile>
+  </PropertyGroup>
+
+  <Target Name="WriteAssemblyVersionFile"
+          Returns="$(AssemblyVersionFile)">
+    <OverrideFileIfContentIsChanged Path="$(AssemblyVersionFile)"
+                                    Content="version=$(FullBuildVersionString)" />
+    <ItemGroup>
+      <FileWrites Include="$(AssemblyVersionFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="UpdateAssemblyInfoVersion"
+          Returns="@(AssemblyInfoFiles)"
+          DependsOnTargets="WriteAssemblyVersionFile">
+
+    <ItemGroup>
+      <AssemblyInfoFiles Include="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+
+    <FileRegexReplace Path="@(AssemblyInfoFiles)"
+                      Pattern="^(\[assembly\: Assembly(File)?Version\()\&quot;(.*)\&quot;"
+                      Replacement="$1&quot;$(FullBuildVersionString)&quot;" />
+
+    <Message Text="$(MSBuildProjectName) version: $(FullBuildVersionString)" Importance="high"/>
+  </Target>
+
+  <!--
+  ================================================================================================
+  WriteWixVersionFile
+
+    Creates the AssemblyVersion.wxi version file for setup code.
+  ================================================================================================
+  -->
+  <Target Name="WriteWixVersionFile"
+          Returns="$(SetupVersionFile)">
+    <ItemGroup>
+      <WxiVersionLines Include="
+&lt;?xml version='1.0' encoding='utf-8'?&gt;
+&lt;!-- generated by build system --&gt;
+&lt;Include&gt;
+  &lt;?define AssemblyVersion='$(FullBuildVersionString)' ?&gt;
+&lt;/Include&gt;
+"/>
+    </ItemGroup>
+
+    <Message Text="$(MSBuildProjectName) version: $(FullBuildVersionString)" Importance="high"/>
+
+    <MakeDir Directories="$(VersionPath)"/>
+    <OverrideFileIfContentIsChanged Path="$(SetupVersionFile)"
+                                    Content="@(WxiVersionLines)" />
+    <ItemGroup>
+      <FileWrites Include="$(SetupVersionFile)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ================================================================================================
+  CleanVersionFiles
+
+    Deletes the AssemblyVersion.* version files.
+  ================================================================================================
+  -->
+  <Target Name="CleanVersionFiles">
+    <Delete Files="$(SetupVersionFile)"
+            TreatErrorsAsWarnings="true" />
+  </Target>
+
+</Project>

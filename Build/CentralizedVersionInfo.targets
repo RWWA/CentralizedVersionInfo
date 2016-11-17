@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <VersionFile Condition="'$(VersionFile)' == ''">.config\VersionInfo.txt</VersionFile>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\Tools\Build.Version.targets"/>
+
+  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.wixproj' ">
+    <IncludeSearchPaths>$(IncludeSearchPaths);$(VersionPath)</IncludeSearchPaths>
+
+    <PrepareForBuildDependsOn>
+      $(PrepareForBuildDependsOn);
+      WriteWixVersionFile
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
+    <PrepareForBuildDependsOn>
+      $(PrepareForBuildDependsOn);
+      UpdateAssemblyInfoVersion
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CoreCleanDependsOn>
+      $(CoreCleanDependsOn);
+      CleanVersionFiles
+    </CoreCleanDependsOn>
+  </PropertyGroup>
+</Project>
