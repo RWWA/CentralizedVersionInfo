@@ -12,6 +12,7 @@
     <tags>Centralized version handling</tags>
     <developmentDependency>true</developmentDependency>
     <licenseUrl>https://opensource.org/licenses/ISC</licenseUrl>
+    <projectUrl>https://github.com/RWWA/CentralizedVersionInfo</projectUrl>
   </metadata>
 
   <files>
