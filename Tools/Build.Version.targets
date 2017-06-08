@@ -74,6 +74,7 @@
   </UsingTask>
 
   <PropertyGroup>
+    <UpdateVersionInfo>false</UpdateVersionInfo>
     <FullBuildVersionString>0.0.0.0</FullBuildVersionString>
     <VersionInfoFileName>$([System.IO.Path]::Combine($(SolutionDir),$(VersionFile)))</VersionInfoFileName>
   </PropertyGroup>
@@ -89,12 +90,14 @@
 
       <!-- Override build number if BuildVersionNumberOverride present -->
       <BuildVersionNumber Condition=" '$(BuildVersionNumberOverride)' != '' ">$(BuildVersionNumberOverride)</BuildVersionNumber>
+      <UpdateVersionInfo Condition=" '$(BuildVersionNumber)' != '0' ">true</UpdateVersionInfo>
 
       <FullBuildVersionString>$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber).$(RevisionVersionNumber)</FullBuildVersionString>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(AsmVersion)' != '' ">
       <FullBuildVersionString>$(AsmVersion)</FullBuildVersionString>
+      <UpdateVersionInfo>true</UpdateVersionInfo>
     </PropertyGroup>
   </Target>
 
@@ -117,6 +120,7 @@
 
   <Target Name="UpdateAssemblyInfoVersion"
           Returns="@(AssemblyInfoFiles)"
+          Condition=" '$(UpdateVersionInfo)' == 'true' "
           DependsOnTargets="WriteAssemblyVersionFile">
 
     <ItemGroup>
@@ -128,6 +132,16 @@
                       Replacement="$1&quot;$(FullBuildVersionString)&quot;" />
 
     <Message Text="$(MSBuildProjectName) version: $(FullBuildVersionString)" Importance="high"/>
+  </Target>
+  
+  <Target Name="ForceUpdateVersionInfo"
+          BeforeTargets="Rebuild"
+          Condition=" '$(BuildVersionNumberOverride)' == '' ">
+    <PropertyGroup>
+      <UpdateVersionInfo>true</UpdateVersionInfo>
+    </PropertyGroup>
+    
+    <Message Text="Force updating VersionInfo" Importance="high"/>
   </Target>
 
   <!--
