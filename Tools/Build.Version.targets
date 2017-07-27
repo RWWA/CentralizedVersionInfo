@@ -124,7 +124,7 @@
           DependsOnTargets="WriteAssemblyVersionFile">
 
     <ItemGroup>
-      <AssemblyInfoFiles Include="Properties\AssemblyInfo.cs" />
+      <AssemblyInfoFiles Include="**\AssemblyInfo.cs" />
     </ItemGroup>
 
     <FileRegexReplace Path="@(AssemblyInfoFiles)"
@@ -135,7 +135,7 @@
   </Target>
   
   <Target Name="ForceUpdateVersionInfo"
-          BeforeTargets="Rebuild"
+          BeforeTargets="BeforeRebuild"
           Condition=" '$(BuildVersionNumberOverride)' == '' ">
     <PropertyGroup>
       <UpdateVersionInfo>true</UpdateVersionInfo>
