@@ -112,7 +112,8 @@
           Condition="Exists($(SolutionDir))"
           Returns="$(AssemblyVersionFile)">
     <OverrideFileIfContentIsChanged Path="$(AssemblyVersionFile)"
-                                    Content="version=$(FullBuildVersionString)" />
+                                    Content="version=$(FullBuildVersionString)
+semver=$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber)" />
     <ItemGroup>
       <FileWrites Include="$(AssemblyVersionFile)" />
     </ItemGroup>
