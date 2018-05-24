@@ -25,6 +25,10 @@
       <Using Namespace="System.Text.RegularExpressions"/>
       <Code Type="Fragment" Language="cs">
         <![CDATA[
+      if (!System.IO.File.Exists(Path))
+        Path = "Properties\\AssemblyInfo.cs";
+      if (!System.IO.File.Exists(Path))
+        Log.LogError("Failed to locate AssemblyInfo.cs. Expected location: " + Path);
       string input = File.ReadAllText(Path);
       Regex rgx = new Regex(Pattern, RegexOptions.Multiline | RegexOptions.IgnoreCase);
       string result = rgx.Replace(input, Replacement);
