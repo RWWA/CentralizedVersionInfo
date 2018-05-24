@@ -80,6 +80,7 @@
   <PropertyGroup>
     <UpdateVersionInfo>false</UpdateVersionInfo>
     <FullBuildVersionString>0.0.0.0</FullBuildVersionString>
+    <FullSemVersionString>0.0.0</FullSemVersionString>
     <VersionInfoFileName>$([System.IO.Path]::Combine($(SolutionDir),$(VersionFile)))</VersionInfoFileName>
   </PropertyGroup>
 
@@ -97,11 +98,17 @@
       <UpdateVersionInfo Condition=" '$(BuildVersionNumber)' != '0' ">true</UpdateVersionInfo>
 
       <FullBuildVersionString>$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber).$(RevisionVersionNumber)</FullBuildVersionString>
+      <FullSemVersionString>$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber)</FullSemVersionString>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(AsmVersion)' != '' ">
       <FullBuildVersionString>$(AsmVersion)</FullBuildVersionString>
+      <FullSemVersionString>$(AsmVersion)</FullSemVersionString>
       <UpdateVersionInfo>true</UpdateVersionInfo>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <Version Condition="'$(Version)'!=''">$(FullSemVersionString)</Version>
     </PropertyGroup>
   </Target>
 
@@ -125,7 +132,7 @@ semver=$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber)" />
 
   <Target Name="UpdateAssemblyInfoVersion"
           Returns="@(AssemblyInfoFiles)"
-          Condition=" '$(UpdateVersionInfo)' == 'true' "
+          Condition=" '$(UpdateVersionInfo)' == 'true' and '$(Version)'==''"
           DependsOnTargets="WriteAssemblyVersionFile">
 
     <ItemGroup>
