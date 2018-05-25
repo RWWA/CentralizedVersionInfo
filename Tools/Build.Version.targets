@@ -28,7 +28,7 @@
       if (!System.IO.File.Exists(Path))
         Path = "Properties\\AssemblyInfo.cs";
       if (!System.IO.File.Exists(Path))
-        Log.LogError("Failed to locate AssemblyInfo.cs. Expected location: " + Path);
+        return true;
       string input = File.ReadAllText(Path);
       Regex rgx = new Regex(Pattern, RegexOptions.Multiline | RegexOptions.IgnoreCase);
       string result = rgx.Replace(input, Replacement);
@@ -142,7 +142,7 @@ semver=$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber)" />
 
   <Target Name="UpdateAssemblyInfoVersion"
           Returns="@(AssemblyInfoFiles)"
-          Condition=" '$(UpdateVersionInfo)' == 'true' and '$(Version)'==''"
+          Condition=" '$(UpdateVersionInfo)' == 'true' "
           DependsOnTargets="WriteAssemblyVersionFile">
 
     <ItemGroup>
