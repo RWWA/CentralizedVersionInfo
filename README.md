@@ -5,7 +5,9 @@ Shared version handling for visual studio projects within a solution
 ### Build using msbuild
 * Build csproj instead of sln
   > If you build the project on its own then SolutionDir will not be set as a property in MsBuild. Same applies if using dotnet.exe build *.csproj.
+  
   > To use the central .config\VersionInfo.exe make sure to pass /p:SolutionDir="SolutionPathHere" as an argument when building csproj individually.
+  
   > If using dotnet.exe build /p:BuildVersionNumberOverride and /p:asmversion will still work on the local project version even without a solution. Starting Version will be the one set inside the csproj.
 
 * Override build part in the version number
