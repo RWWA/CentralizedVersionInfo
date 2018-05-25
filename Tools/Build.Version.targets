@@ -78,20 +78,30 @@
   </UsingTask>
 
   <PropertyGroup>
+    <SolutionDir Condition="'$(SolutionDir)' == '*Undefined*'">$([System.IO.Directory]::GetParent($(MSBuildProjectDirectory)))</SolutionDir>
+    <SolutionDir Condition="'$(SolutionDir)' == ''">$([System.IO.Directory]::GetParent($(MSBuildProjectDirectory)))</SolutionDir>
     <UpdateVersionInfo>false</UpdateVersionInfo>
+
     <FullBuildVersionString>0.0.0.0</FullBuildVersionString>
+    <FullBuildVersionString Condition="'$(Version)' != ''">$(Version)</FullBuildVersionString>
+
     <FullSemVersionString>0.0.0</FullSemVersionString>
+    <FullSemVersionString Condition="'$(Version)' != ''">$(Version)</FullSemVersionString>
+
     <VersionInfoFileName>$([System.IO.Path]::Combine($(SolutionDir),$(VersionFile)))</VersionInfoFileName>
   </PropertyGroup>
 
   <!-- Central control over versioning -->
-  <Target Name="PrepareBuildVersionInfo">
+  <Target Name="PrepareBuildVersionInfo">  
     <PropertyGroup Condition="Exists($(VersionInfoFileName))">
       <FullBuildVersionString>$([System.IO.File]::ReadAllText($(VersionInfoFileName)).Trim())</FullBuildVersionString>
+    </PropertyGroup>
+
+    <PropertyGroup>
       <MajorVersionNumber>$(FullBuildVersionString.Split(".")[0])</MajorVersionNumber>
       <MinorVersionNumber>$(FullBuildVersionString.Split(".")[1])</MinorVersionNumber>
       <BuildVersionNumber>$(FullBuildVersionString.Split(".")[2])</BuildVersionNumber>
-      <RevisionVersionNumber>$(FullBuildVersionString.Split(".")[3])</RevisionVersionNumber>
+      <RevisionVersionNumber Condition="$(FullBuildVersionString.Split('.').Length) == 4">$(FullBuildVersionString.Split(".")[3])</RevisionVersionNumber>
 
       <!-- Override build number if BuildVersionNumberOverride present -->
       <BuildVersionNumber Condition=" '$(BuildVersionNumberOverride)' != '' ">$(BuildVersionNumberOverride)</BuildVersionNumber>
