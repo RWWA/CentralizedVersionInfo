@@ -142,7 +142,7 @@ semver=$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber)" />
 
   <Target Name="UpdateAssemblyInfoVersion"
           Returns="@(AssemblyInfoFiles)"
-          Condition=" '$(UpdateVersionInfo)' == 'true' and 'Exists($(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll)' == 'true'"
+          Condition=" '$(UpdateVersionInfo)' == 'true' And '$(MSBuildRuntimeType)' == 'Full'"
           DependsOnTargets="WriteAssemblyVersionFile">
 
     <ItemGroup>
