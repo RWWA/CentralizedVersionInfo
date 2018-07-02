@@ -127,6 +127,7 @@
 
     <SetupVersionFile>$(VersionPath)AssemblyVersion.wxi</SetupVersionFile>
     <AssemblyVersionFile Condition="Exists($(SolutionDir))">$(SolutionDir)AssemblyVersion.txt</AssemblyVersionFile>
+    <AssemblyVersionJsFile Condition="Exists($(SolutionDir))">$(SolutionDir)AssemblyVersion.js</AssemblyVersionJsFile>
   </PropertyGroup>
 
   <Target Name="WriteAssemblyVersionFile"
@@ -137,6 +138,12 @@
 semver=$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber)" />
     <ItemGroup>
       <FileWrites Include="$(AssemblyVersionFile)" />
+    </ItemGroup>
+
+    <OverrideFileIfContentIsChanged Path="$(AssemblyVersionJsFile)"
+                                    Content="export default &quot;$(MajorVersionNumber).$(MinorVersionNumber).$(BuildVersionNumber)&quot;" />
+    <ItemGroup>
+      <FileWrites Include="$(AssemblyVersionJsFile)" />
     </ItemGroup>
   </Target>
 
