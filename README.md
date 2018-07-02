@@ -2,6 +2,8 @@
 Shared version handling for visual studio projects within a solution
 
 ## Usage
+### Import in ES6 web app
+  > import appVersion from './../../AssemblyVersion'
 ### Build using msbuild
 * Build csproj instead of sln
   > If you build the project on its own then SolutionDir will not be set as a property in MsBuild. Same applies if using dotnet.exe build *.csproj.
